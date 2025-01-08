@@ -13,6 +13,17 @@ router.post('/', authMiddleware(['Manager', 'Pantry']), async (req, res) => {
         res.status(400).json({ error: err.message });
     }
 });
+router.get('/', authMiddleware(['Manager', 'Pantry']), async (req, res) => {
+    try {
+        const dietCharts = await DietChart.find()
+            .populate('patientId', 'name') // Populate only the 'name' field from Patient model
+            .exec();
+
+        res.json(dietCharts);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
 
 // Get diet chart for a specific patient (Manager, Pantry, and Delivery roles)
 router.get('/:patientId', authMiddleware(['Manager', 'Pantry', 'Delivery']), async (req, res) => {
