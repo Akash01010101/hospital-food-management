@@ -12,7 +12,7 @@ const seedUsers = async () => {
             { email: 'hospital_delivery@xyz.com', password: 'Password@2025', role: 'Delivery' }
         ];
 
-        // Clear existing users and seed new ones
+        
         await User.deleteMany();
         for (const userData of users) {
             const user = new User(userData);

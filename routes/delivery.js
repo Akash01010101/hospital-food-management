@@ -2,8 +2,8 @@ const express = require('express');
 const router = express.Router();
 const PantryStaff = require('../models/PantryStaff');
 const authMiddleware = require('../middleware/authMiddleware');
+const Patient = require('../models/Patient');
 
-// Add a new delivery staff member (Manager only)
 router.post('/', authMiddleware(['Manager']), async (req, res) => {
     try {
         const staff = new PantryStaff(req.body);
@@ -15,26 +15,65 @@ router.post('/', authMiddleware(['Manager']), async (req, res) => {
     }
 });
 
-// Assign a delivery task (Manager or Pantry roles only)
+router.delete('/delete-delivery/:staffId/:deliveryId', authMiddleware(['Manager', 'Delivery']), async (req, res) => {  
+    try {  
+        const { staffId, deliveryId } = req.params;  
+
+        
+        const staff = await PantryStaff.findById(staffId);  
+        if (!staff) return res.status(404).json({ error: 'Staff member not found' });  
+
+        
+        const initialLength = staff.assignedDeliveries.length;
+        staff.assignedDeliveries = staff.assignedDeliveries.filter(delivery => delivery._id.toString() !== deliveryId);
+
+        if (staff.assignedDeliveries.length === initialLength) {
+            return res.status(404).json({ error: 'Delivery not found' });
+        }
+
+        
+        await staff.save();  
+
+        res.json({ message: "Delivery deleted successfully", staff });  
+    } catch (err) {  
+        console.error("Error deleting delivery:", err);
+        res.status(500).json({ error: 'Internal server error' });  
+    }  
+});
+
+
 router.put('/assign-delivery/:staffId', authMiddleware(['Manager', 'Pantry']), async (req, res) => {
     try {
         const { staffId } = req.params;
         const { dietChartId, patientId } = req.body;
 
+        
         const staff = await PantryStaff.findById(staffId);
         if (!staff) return res.status(404).json({ error: 'Staff member not found' });
 
+        
+        const existingAssignment = await PantryStaff.findOne({
+            "assignedDeliveries.dietChartId": dietChartId,
+            "assignedDeliveries.status": { $ne: "Completed" },
+        });
+
+        if (existingAssignment) {
+            return res.status(400).json({ error: "This diet chart is already assigned for delivery." });
+        }
+
+        
         staff.assignedDeliveries.push({ dietChartId, patientId, status: "Pending" });
         await staff.save();
 
         res.json({ message: "Delivery assigned successfully", staff });
     } catch (err) {
+        console.error("Error assigning delivery:", err);
         res.status(400).json({ error: err.message });
     }
 });
 
-// Update delivery status (Delivery role only)
-router.put('/update-delivery/:staffId/:deliveryId', authMiddleware(['Delivery']), async (req, res) => {
+
+router.put('/update-delivery/:staffId/:deliveryId', authMiddleware(['Delivery','Pantry']), async (req, res) => {
     try {
         const { staffId, deliveryId } = req.params;
         const { status, deliveryNotes } = req.body;
@@ -57,7 +96,7 @@ router.put('/update-delivery/:staffId/:deliveryId', authMiddleware(['Delivery'])
     }
 });
 
-// Get all deliveries for a staff member (Delivery role only)
+
 router.get('/:staffId/deliveries', authMiddleware(['Delivery']), async (req, res) => {
     try {
         const { staffId } = req.params;

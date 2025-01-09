@@ -12,13 +12,14 @@ const PantryStaffSchema = new mongoose.Schema({
     ],
     assignedDeliveries: [
         {
-            dietChartId: { type: mongoose.Schema.Types.ObjectId, ref: 'DietChart' },
-            patientId: { type: mongoose.Schema.Types.ObjectId, ref: 'Patient' },
-            status: { type: String, enum: ['Pending', 'Delivered'], default: 'Pending' },
-            deliveredAt: { type: Date },
-            deliveryNotes: { type: String },
+          dietChartId: { type: mongoose.Schema.Types.ObjectId, ref: 'DietChart' },
+          patientId: { type: mongoose.Schema.Types.ObjectId, ref: 'Patient' },
+          bedNumber: { type: String,ref: 'Patient' }, // Add this field
+          status: { type: String, default: "Pending" },
+          deliveredAt: { type: Date },
+          deliveryNotes: { type: String },
         },
-    ],
+      ],
 });
 
 module.exports = mongoose.model('PantryStaff', PantryStaffSchema);

@@ -9,7 +9,7 @@ function authMiddleware(roles = []) {
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
             req.user = decoded;
 
-            // Check role if roles are specified
+            
             if (roles.length && !roles.includes(req.user.role)) {
                 return res.status(403).json({ error: 'Access denied, insufficient permissions' });
             }

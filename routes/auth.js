@@ -4,12 +4,12 @@ const bcrypt = require('bcrypt');
 const User = require('../models/User');
 const router = express.Router();
 
-// Register a user (for initial setup or additional users)
+
 router.post('/register', async (req, res) => {
     try {
         const { email, password, role } = req.body;
 
-        // Ensure role is valid
+        
         if (!['Manager', 'Pantry', 'Delivery'].includes(role)) {
             return res.status(400).json({ error: 'Invalid role' });
         }
@@ -23,7 +23,7 @@ router.post('/register', async (req, res) => {
     }
 });
 
-// Login endpoint
+
 router.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -33,7 +33,7 @@ router.post('/login', async (req, res) => {
             return res.status(401).json({ error: 'Invalid email or password' });
         }
 
-        // Generate JWT
+        
         const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1d' });
         res.json({ token, role: user.role});
     } catch (err) {

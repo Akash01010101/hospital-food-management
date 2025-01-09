@@ -3,7 +3,7 @@ const router = express.Router();
 const DietChart = require('../models/DietChart');
 const authMiddleware = require('../middleware/authMiddleware');
 
-// Create a diet chart for a patient (Manager or Pantry roles only)
+
 router.post('/', authMiddleware(['Manager', 'Pantry']), async (req, res) => {
     try {
         const dietChart = new DietChart(req.body);
@@ -16,7 +16,7 @@ router.post('/', authMiddleware(['Manager', 'Pantry']), async (req, res) => {
 router.get('/', authMiddleware(['Manager', 'Pantry']), async (req, res) => {
     try {
         const dietCharts = await DietChart.find()
-            .populate('patientId', 'name') // Populate only the 'name' field from Patient model
+            .populate('patientId', 'name') 
             .exec();
 
         res.json(dietCharts);
@@ -25,7 +25,7 @@ router.get('/', authMiddleware(['Manager', 'Pantry']), async (req, res) => {
     }
 });
 
-// Get diet chart for a specific patient (Manager, Pantry, and Delivery roles)
+
 router.get('/:patientId', authMiddleware(['Manager', 'Pantry', 'Delivery']), async (req, res) => {
     try {
         const dietChart = await DietChart.findOne({ patientId: req.params.patientId });
@@ -38,7 +38,7 @@ router.get('/:patientId', authMiddleware(['Manager', 'Pantry', 'Delivery']), asy
     }
 });
 
-// Update a diet chart (Manager or Pantry roles only)
+
 router.put('/:id', authMiddleware(['Manager', 'Pantry']), async (req, res) => {
     try {
         const updatedDietChart = await DietChart.findByIdAndUpdate(req.params.id, req.body, { new: true });
@@ -51,7 +51,7 @@ router.put('/:id', authMiddleware(['Manager', 'Pantry']), async (req, res) => {
     }
 });
 
-// Delete a diet chart (Manager only)
+
 router.delete('/:id', authMiddleware(['Manager']), async (req, res) => {
     try {
         const deletedDietChart = await DietChart.findByIdAndDelete(req.params.id);
